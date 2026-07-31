@@ -113,11 +113,21 @@ const clamp = (v: number, lim: number): number => (v < -lim ? -lim : v > lim ? l
 /** 角度を -π〜π に畳む */
 const wrap = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a))
 
-/** 頭の位置と前方向を読む。前方は VRM の規約どおり -Z */
+/**
+ * 頭の位置と、顔が向いている方位を読む。
+ *
+ * 前方は頭ボーンの **+Z**。VRMのモデル自体は -Z を向いて立つ規約だが、lookAtが基準に
+ * するのは `faceFront`（既定 +Z）を頭の回転で回したベクトルの方で、これは
+ * `head.getWorldDirection()` と一致する（実測で3経路が同値 (0.878, 0, 0.479) を返した）。
+ *
+ * ここを -Z と取り違えると、狙う点が真後ろに出る。VRMLookAtは内部で ±180度に近い
+ * 角度を計算し、rangeMap の inputMaxValue で切られて**目が可動端に張り付いたまま**になる。
+ * 実際に一度そうなった（内部 _yaw が -40〜-127度・inputMaxValue は90）。
+ */
 const readHead = (rig: AvatarRig): number => {
   rig.head.getWorldPosition(tmpHead)
   rig.head.getWorldDirection(tmpFwd)
-  return Math.atan2(-tmpFwd.x, -tmpFwd.z)
+  return Math.atan2(tmpFwd.x, tmpFwd.z)
 }
 
 /** ワールド上の点を、頭に対する相対角（錐台に丸め済み）へ落とす */

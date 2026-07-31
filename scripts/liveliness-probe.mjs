@@ -126,7 +126,45 @@ console.log(`gaze : サンプル${gazes.length} 移動${jumps}回 最大移動${
 // OFFの検証: レバーを倒さずpropを直接叩けないので、Liveliness側のresetを間接確認
 // （ここではONのまま。OFFは実機/手動で確認する）
 
+// 視線が可動端に張り付いていないか。
+// VRMLookAtは内部で角度を計算し rangeMap の inputMaxValue で切る。基準にする「顔の
+// 正面」を取り違えると、常に大きな角度を要求して目が端に貼り付いたまま止まる。
+// 実際に一度そうなった（生の頭ボーンの+Zを正面と誤認＝正解は正規化ボーン。90度ずれ）。
+// 見た目では気づきにくく、weightもサッカードも正常に見えるので、ここで数値で見る。
+const internal = await page.evaluate(
+  () =>
+    new Promise((resolve) => {
+      const las = []
+      globalThis.__scene.traverse((o) => {
+        if (o.vrmLookAt) las.push(o.vrmLookAt)
+      })
+      if (!las.length) return resolve(null)
+      const samples = []
+      const t0 = performance.now()
+      const tick = () => {
+        samples.push(las.map((la) => la._yaw))
+        if (performance.now() - t0 < 3000) requestAnimationFrame(tick)
+        else
+          resolve({
+            inputMax: las[0]?.applier?.rangeMapHorizontalOuter?.inputMaxValue ?? null,
+            maxAbsYaw: Math.max(...samples.flat().map((v) => Math.abs(v ?? 0))),
+          })
+      }
+      requestAnimationFrame(tick)
+    }),
+)
+if (internal) {
+  console.log(
+    `内部角: |yaw|最大 ${internal.maxAbsYaw.toFixed(1)}度 / 切り捨てライン ${internal.inputMax}度`,
+  )
+}
+
 const verdict = []
+if (internal && internal.inputMax && internal.maxAbsYaw > internal.inputMax * 0.8) {
+  verdict.push(
+    `NG: 視線が可動端に張り付いている（|yaw|${internal.maxAbsYaw.toFixed(1)}度 ≥ ${internal.inputMax}度の8割）。正面の基準を疑うこと`,
+  )
+}
 if (inventory.avatars < 1) verdict.push('NG: アバターを検出できていない')
 if (inventory.hasBlink < 1) verdict.push('NG: blink表情が見つからない')
 if (maxBlink < 0.8) verdict.push(`NG: まばたきが閉じきっていない (max=${maxBlink.toFixed(2)})`)

@@ -36,6 +36,9 @@ interface RangeMap {
 export interface VrmLookAt {
   target?: Object3D | null
   autoUpdate?: boolean
+  humanoid?: {
+    getNormalizedBoneNode?: (name: string) => Object3D | null
+  }
   applier?: {
     rangeMapHorizontalOuter?: RangeMap
     rangeMapHorizontalInner?: RangeMap
@@ -206,6 +209,15 @@ export const scanAvatars = (scene: Object3D): ScanResult => {
   for (const [root, rig] of byRoot) {
     rig.lookAt = lookAtByRoot.get(root) ?? null
     rig.gazeGain = gainOf(rig.lookAt)
+
+    // 頭は必ず**正規化ボーン**を採る。
+    // 生のボーン（J_Bip_C_Head 等）は任意の初期姿勢を持ちうるので、その +Z は顔の
+    // 向きとは限らない。実測ではこのモデルでちょうど90度ずれており、そのまま基準に
+    // すると常に真横を狙って目が可動端に張り付いた。正規化ボーンはその差を取り除く
+    // ために存在する層で、実測でも校正値と一致した（正規化head/hips=20.05度、
+    // 生head=110.05度、校正で求めた真の正面≈20度）。
+    const normalizedHead = rig.lookAt?.humanoid?.getNormalizedBoneNode?.('head')
+    if (normalizedHead) rig.head = normalizedHead
     root.traverse((o) => {
       if (rig.head === root && o.type === 'Bone' && isHeadName(o.name)) rig.head = o
     })

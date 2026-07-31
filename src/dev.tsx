@@ -26,7 +26,9 @@ createRoot(rootElement).render(
       outputBufferType={worldConfig.outputBufferType}
       spawnPosition={[0, 1.5, 3.2]}
     >
-      <World />
+      {/* ?nolively=1 で駆動を止める。視線の校正計測はこちらで行う
+          （Livelinessが毎フレーム注視点を書くので、走らせたままでは掃引できない） */}
+      <World isPreview={new URLSearchParams(location.search).has('nolively')} />
       <DevAvatars />
     </DevEnvironment>
   </XRiftProvider>,
