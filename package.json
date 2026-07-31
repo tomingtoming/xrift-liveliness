@@ -1,0 +1,59 @@
+{
+  "name": "xrift-liveliness",
+  "version": "0.1.0",
+  "description": "XRift world: auto-blink and simulated eye contact for every avatar in the room — 表情の実証室",
+  "type": "module",
+  "main": "./dist/remoteEntry.js",
+  "module": "./dist/remoteEntry.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/remoteEntry.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "author": "toming (https://github.com/tomingtoming)",
+  "repository": "github:tomingtoming/xrift-liveliness",
+  "peerDependencies": {
+    "@react-three/drei": "^10.7.3",
+    "@react-three/fiber": "^9.3.0",
+    "@react-three/rapier": "^2.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.183.1"
+  },
+  "dependencies": {
+    "@xrift/world-components": "^0.46.0"
+  },
+  "devDependencies": {
+    "@originjs/vite-plugin-federation": "^1.4.1",
+    "@pixiv/three-vrm": "^3.5.5",
+    "@pixiv/three-vrm-animation": "^3.5.5",
+    "@playwright/test": "^1.62.1",
+    "@pmndrs/uikit": "^1.0.74",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@react-three/rapier": "^2.2.0",
+    "@react-three/uikit": "^1.0.74",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.183.1",
+    "@vitejs/plugin-react": "^5.1.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "three": "^0.183.1",
+    "typescript": "^5.6.2",
+    "vite": "^7.3.1",
+    "vite-plugin-dts": "^4.0.0"
+  }
+}

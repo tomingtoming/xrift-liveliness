@@ -1,0 +1,37 @@
+{
+  "world": {
+    "distDir": "./dist",
+    "title": "表情の実証室",
+    "description": "部屋にいる全員のアバターに、まばたきと疑似的な視線が付く。レバーで全員ぶんを同時にON/OFFできるので、話しながら見え方の違いをその場で比べられる。カメラも視線トラッキングも使わず、乱数と他の人の位置だけで作っている。",
+    "thumbnailPath": "thumbnail.png",
+    "buildCommand": "npm run build",
+    "ignore": [
+      "**/.DS_Store",
+      "**/Thumbs.db",
+      "**/*.js.map",
+      "**/.gitkeep",
+      "**/index.html",
+      "**/*.vrm",
+      "**/__federation_shared_@react-three/drei-*.js",
+      "**/__federation_shared_@react-three/fiber-*.js",
+      "**/__federation_shared_@react-three/rapier-*.js",
+      "**/__federation_shared_@xrift/world-components-*.js",
+      "**/__federation_shared_three-*.js",
+      "**/__federation_shared_three/addons/**",
+      "**/__federation_shared_react-*.js",
+      "**/__federation_shared_react-dom-*.js",
+      "**/__federation_shared_react-dom/client-*.js",
+      "**/__federation_shared_react/jsx-runtime-*.js",
+      "**/rapier.es-*.js",
+      "**/hls-*.js"
+    ],
+    "physics": {
+      "gravity": 9.81,
+      "allowInfiniteJump": false
+    },
+    "camera": {
+      "far": 60,
+      "near": 0.1
+    }
+  }
+}

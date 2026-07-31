@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.log
+.xrift/
+dev-assets/*.vrm
+out/
