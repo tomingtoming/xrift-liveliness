@@ -63,6 +63,15 @@ VRChatのAvatar Descriptorが持つのと同じ2軸。`calm ↔ excited` がま�
 
 目視でなく数値で確かめている（`scripts/`）。開発ハーネスはXRiftのホストと同じ手順（VRMをロード → `vrm.scene` を add → 毎フレーム `vrm.update(dt)` → `VRMLookAtQuaternionProxy` を add）を再現しており、モデルは three-vrm 公式サンプル。
 
+検証用モデルは three-vrm 公式リポジトリのサンプル。リポジトリには含めないので、最初に一度取ってくる。
+
+```
+$ mkdir -p dev-assets && curl -Lo dev-assets/test-avatar.vrm \
+    https://raw.githubusercontent.com/pixiv/three-vrm/dev/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm
+```
+
+`npm run dev` の間だけ `/test-avatar.vrm` として配られる（`public/` に置くと本番のdistへ丸ごとコピーされるため、vite側の開発専用ミドルウェアで配っている）。
+
 ```
 $ npm run dev
 $ node scripts/liveliness-probe.mjs
@@ -107,4 +116,6 @@ toming自身のVRM3体（玉の巻物使い・Lowi・キョンシー娘）は、
 
 ## ライセンス
 
-MIT。検証に使う `dev-assets/test-avatar.vrm` は three-vrm 公式サンプル（リポジトリには含めない。`npm run dev` の前に配置する）。
+コードはMIT。
+
+検証に使う `dev-assets/test-avatar.vrm` は [pixiv/three-vrm](https://github.com/pixiv/three-vrm)（MIT）のexamples同梱モデル `VRM1_Constraint_Twist_Sample.vrm`。VRM埋め込みメタは `avatarPermission: everyone`／`allowRedistribution: true`／`modification: allowModificationRedistribution`／`creditNotation: unnecessary`、著作者 pixiv Inc.。リポジトリには含めず、上の手順で取得する。
