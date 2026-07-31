@@ -19,7 +19,10 @@ import { VRMLoaderPlugin, type VRM } from '@pixiv/three-vrm'
 import { VRMLookAtQuaternionProxy } from '@pixiv/three-vrm-animation'
 import { Group, Object3D, PerspectiveCamera, Vector3 } from 'three'
 
-const MODEL_URL = '/test-avatar.vrm'
+const MODEL_URL = (() => {
+  const q = new URLSearchParams(location.search).get('model')
+  return q ? `/dev-assets/${q}` : '/test-avatar.vrm'
+})()
 
 const PLACEMENTS: { position: [number, number, number]; rotationY: number }[] = [
   { position: [-1.1, 0, -0.6], rotationY: 0.35 },

@@ -14,8 +14,9 @@ const devAssets = (): PluginOption => ({
   apply: 'serve',
   configureServer(server) {
     server.middlewares.use((req, res, next) => {
-      if (!req.url?.startsWith('/test-avatar.vrm')) return next()
-      const file = path.resolve(__dirname, 'dev-assets/test-avatar.vrm')
+      const m = req.url?.match(/^\/dev-assets\/([\w.-]+\.vrm)$/) ?? req.url?.match(/^\/(test-avatar\.vrm)$/)
+      if (!m) return next()
+      const file = path.resolve(__dirname, 'dev-assets', m[1])
       if (!fs.existsSync(file)) return next()
       res.setHeader('Content-Type', 'model/gltf-binary')
       fs.createReadStream(file).pipe(res)
