@@ -85,12 +85,14 @@ export default defineConfig({
     minify: false,
     cssCodeSplit: false,
     assetsDir: '',
-    rollupOptions: {
-      // 既定では index.html＝開発エントリ（dev.tsx→devAvatars）まで本番に混ざり、
-      // 検証専用の @pixiv/three-vrm が配信物に入る（実測でdistが21MB＝他ワールドの倍）。
-      // 本番に要るのはワールド本体だけ。
-      input: './src/index.tsx',
-    },
+    // 注意: rollupOptions.input で index.html を外してはいけない。
+    // 開発エントリを本番から省こうとして input を './src/index.tsx' にしたところ、
+    // フェデレーションの公開チャンク（__federation_expose_World-*.js）が生成されず、
+    // remoteEntry.js に未解決のプレースホルダ "${__federation_expose_./World}" が
+    // 残ったまま出荷された（XRiftがワールド本体を読めない状態でアップロード成功）。
+    // dist に開発エントリのチャンクが残るのは他ワールドと同じ既定の挙動で、
+    // プラットフォームは remoteEntry からしか辿らないので実害が無い。
+    // 壊れていないことは scripts/check-federation.mjs が build 後に機械で確かめる。
   },
   resolve: {
     alias: {
