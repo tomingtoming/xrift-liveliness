@@ -17,7 +17,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { VRMLoaderPlugin, type VRM } from '@pixiv/three-vrm'
 import { VRMLookAtQuaternionProxy } from '@pixiv/three-vrm-animation'
-import { Group } from 'three'
+import { Group, Object3D, PerspectiveCamera, Vector3 } from 'three'
 
 const MODEL_URL = '/test-avatar.vrm'
 
@@ -40,7 +40,28 @@ export const DevAvatars = () => {
   useEffect(() => {
     ;(globalThis as unknown as { __gl?: unknown; __camera?: unknown }).__gl = gl
     ;(globalThis as unknown as { __camera?: unknown }).__camera = camera
-  }, [gl, camera])
+
+    // 候補アバターの見た目を撮るための口（検証専用）。撮影用カメラで直接renderするので
+    // 操作ヒントのDOMオーバーレイが写り込まない。
+    ;(globalThis as unknown as { __portrait?: (d: number) => string | null }).__portrait = (
+      distance: number,
+    ) => {
+      let head: Object3D | null = null
+      scene.traverse((o) => {
+        if (!head && o.type === 'Bone' && /head/i.test(o.name) && !/end|top/i.test(o.name)) head = o
+      })
+      if (!head) return null
+      const aim = new Vector3()
+      ;(head as Object3D).getWorldPosition(aim)
+      if (distance > 1) aim.y -= 0.75
+      const shot = new PerspectiveCamera(30, 1, 0.01, 100)
+      shot.position.set(aim.x, aim.y, aim.z + distance)
+      shot.lookAt(aim)
+      shot.updateMatrixWorld()
+      gl.render(scene, shot)
+      return gl.domElement.toDataURL('image/png')
+    }
+  }, [gl, camera, scene])
 
   useEffect(() => {
     let disposed = false

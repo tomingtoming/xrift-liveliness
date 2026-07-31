@@ -27,10 +27,56 @@ interface ExpressionNode extends Object3D {
   weight: number
 }
 
+interface RangeMap {
+  inputMaxValue: number
+  outputScale: number
+}
+
 /** three-vrm の VRMLookAt（同上） */
 export interface VrmLookAt {
   target?: Object3D | null
   autoUpdate?: boolean
+  applier?: {
+    rangeMapHorizontalOuter?: RangeMap
+    rangeMapHorizontalInner?: RangeMap
+    rangeMapVerticalUp?: RangeMap
+    rangeMapVerticalDown?: RangeMap
+  }
+}
+
+/**
+ * 「何度を要求すると目が何度回るか」の比。
+ *
+ * VRMのlookAtは rangeMap で入力角を圧縮する。手元のモデルは入力90度→出力10度の
+ * 9:1で、これは作者が「目はこれ以上動かさない」と決めた様式そのもの。値はモデルごとに
+ * 違うので、要求角を決め打ちすると、あるモデルでは目が飛び出し別のモデルでは動いて
+ * 見えない。∴ 実行時に読んで、狙った実振れ角から逆算する。
+ *
+ * 読めなければVRM既定の9:1を仮定する。
+ */
+export interface GazeGain {
+  /** 出力度 / 入力度 */
+  yaw: number
+  pitch: number
+  /** このモデルが許す最大の実振れ角（度） */
+  maxYawDeg: number
+  maxPitchDeg: number
+}
+
+const DEFAULT_GAIN: GazeGain = { yaw: 10 / 90, pitch: 10 / 90, maxYawDeg: 10, maxPitchDeg: 10 }
+
+const gainOf = (lookAt: VrmLookAt | null): GazeGain => {
+  const a = lookAt?.applier
+  if (!a) return DEFAULT_GAIN
+  const h = a.rangeMapHorizontalOuter ?? a.rangeMapHorizontalInner
+  const v = a.rangeMapVerticalUp ?? a.rangeMapVerticalDown
+  if (!h?.inputMaxValue || !v?.inputMaxValue) return DEFAULT_GAIN
+  return {
+    yaw: h.outputScale / h.inputMaxValue,
+    pitch: v.outputScale / v.inputMaxValue,
+    maxYawDeg: h.outputScale,
+    maxPitchDeg: v.outputScale,
+  }
 }
 
 interface LookAtProxyNode extends Object3D {
@@ -59,6 +105,8 @@ export interface AvatarRig {
   expressions: Map<string, ExpressionNode>
   /** 視線の口。無いアバターもある */
   lookAt: VrmLookAt | null
+  /** そのモデルの視線の効き具合（rangeMapから実測） */
+  gazeGain: GazeGain
   /** 頭の位置の目安（視線の相手として狙う点）。見つからなければ root */
   head: Object3D
 }
@@ -123,7 +171,7 @@ export const scanAvatars = (scene: Object3D): ScanResult => {
       const root = rootOfExpression(obj)
       let rig = byRoot.get(root)
       if (!rig) {
-        rig = { root, expressions: new Map(), lookAt: null, head: root }
+        rig = { root, expressions: new Map(), lookAt: null, gazeGain: DEFAULT_GAIN, head: root }
         byRoot.set(root, rig)
       }
       const preset = obj.name.slice(EXPRESSION_PREFIX.length)
@@ -157,6 +205,7 @@ export const scanAvatars = (scene: Object3D): ScanResult => {
   // 視線と頭を紐づける
   for (const [root, rig] of byRoot) {
     rig.lookAt = lookAtByRoot.get(root) ?? null
+    rig.gazeGain = gainOf(rig.lookAt)
     root.traverse((o) => {
       if (rig.head === root && o.type === 'Bone' && isHeadName(o.name)) rig.head = o
     })
